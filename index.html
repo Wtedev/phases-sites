@@ -1945,8 +1945,10 @@ html{scroll-padding-top:calc(var(--navH) + 8px)}
   /* hero device: laptop starts landscape and becomes a phone; phone keeps fixed proportions; glass tech chips appear */
   (function(){
     const dv=$('#dv'), mobile=matchMedia('(max-width:820px)');
-    const phoneH=()=>Math.min(620,innerHeight-250), phoneW=()=>Math.round(phoneH()*0.48);
-    const lapW=()=>Math.min(980,innerWidth*0.8), lapH=()=>Math.min(Math.round(lapW()*0.6),innerHeight-260);
+    const svhPx=()=>{const el=document.createElement('div');el.style.cssText='position:fixed;height:100svh;visibility:hidden;pointer-events:none';document.body.appendChild(el);const h=el.offsetHeight;el.remove();return h||innerHeight};
+    let lockH=svhPx();
+    const phoneH=()=>Math.min(620,lockH-250), phoneW=()=>Math.round(phoneH()*0.48);
+    const lapW=()=>Math.min(980,innerWidth*0.8), lapH=()=>Math.min(Math.round(lapW()*0.6),lockH-260);
     const scrollMax=()=>{const pg=$('#msPage'),v=$('.ms-view');return -(pg.scrollHeight-v.clientHeight)};
     const syncSide=()=>{const stage=dv.parentElement.getBoundingClientRect();const r=dv.getBoundingClientRect();const w=r.width||(mobile.matches?phoneW():lapW());const h=r.height||(mobile.matches?phoneH():lapH());const tuck=mobile.matches?12:34;document.documentElement.style.setProperty('--side',Math.round(w/2-tuck)+'px');document.documentElement.style.setProperty('--pt',Math.round(r.top-stage.top)+'px');document.documentElement.style.setProperty('--ph',Math.round(h)+'px')};
     const showChips=(at)=>{gsap.utils.toArray('.gc').forEach((el,i)=>tl.to(el,{opacity:1,scale:1,duration:.1,ease:'power2.out'},at+i*.04))};
@@ -1983,7 +1985,8 @@ html{scroll-padding-top:calc(var(--navH) + 8px)}
       }
     }
     build();
-    let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{build();ScrollTrigger.refresh()},200)});
+    let rt, lastW=innerWidth;
+    addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(innerWidth===lastW)return;lastW=innerWidth;lockH=svhPx();build();ScrollTrigger.refresh()},200)});
   })();
   
 
